@@ -1,0 +1,7 @@
+CREATE TABLE guests
+(
+    name Utf8,
+    message Utf8,
+    PRIMARY KEY (name)
+);
+COMMIT;

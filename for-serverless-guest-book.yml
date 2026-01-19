@@ -1,0 +1,32 @@
+openapi: 3.0.0
+info:
+  title: for-serverless-guest-book
+  version: 1.0.0
+paths:
+  /:
+    get:
+      x-yc-apigateway-integration:
+        type: object_storage
+        bucket:             storage-for-serverless-guest-book-factor-feerist
+        object:             index.html
+        presigned_redirect: false
+        service_account:    ajepfqulr5kauv9i6qi1
+      operationId: static
+  /register:
+    post:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id:  d4ed7vh8qubjpt82s3kb
+      operationId: register
+  /guests:
+    get:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id:  d4ed7vh8qubjpt82s3kb
+      operationId: guests
+  /backend-version:
+    get:
+      x-yc-apigateway-integration:
+        type: cloud_functions
+        function_id:  d4ed7vh8qubjpt82s3kb
+      operationId: backend-version

@@ -1,0 +1,15 @@
+Скрипт для создания версии функции:
+(в src.zip надо запечатать index.py и requirements.txt)
+
+yc serverless function version create --function-name for-serverless-guest-book --memory=256m --execution-timeout=5s --runtime=python39 --entrypoint=index.handler --service-account-id ajepfqulr5kauv9i6qi1 --environment USE_METADATA_CREDENTIALS=1 --environment endpoint=grpcs://ydb.serverless.yandexcloud.net:2135 --environment database=/ru-central1/b1gl8rn874j2rntqsngn/etn3ijqp2cjg2n1kh875 --source-path src.zip --folder-id b1g3if02lal6kfi7gu43
+
+
+Скрипт для создания ключа от сервисного аккаунта с нужными правами:
+
+yc iam key create --service-account-name serverless-guest-book --output sa-key.json --folder-id b1g3if02lal6kfi7gu43
+
+
+Скрипт для создания схемы в YDB:
+(пример скрипта есть в репозитории, ключ из прошлой команды)
+
+ydb --endpoint grpcs://ydb.serverless.yandexcloud.net:2135 --database /ru-central1/b1gl8rn874j2rntqsngn/etn3ijqp2cjg2n1kh875 --sa-key-file sa-key.json scripting yql --file guests.yql

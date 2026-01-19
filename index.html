@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Guest Book</title>
+    <!-- предостережёт от лишнего GET-запроса на адрес /favicon.ico -->
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f5f5f5;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        margin-bottom: 30px;
+        color: #2c3e50;
+        text-align: center;
+    }
+
+    h2 {
+        margin-bottom: 15px;
+         color: #34495e;
+        font-size: 1.3rem;
+    }
+
+    main {
+        display: grid;
+        gap: 40px;
+    }
+
+    section {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .new-guest form div {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+         color: #555;
+    }
+
+    input, textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        font-family: inherit;
+    }
+
+    input:focus, textarea:focus {
+        outline: none;
+        border-color: #3498db;
+    }
+
+    textarea {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    button {
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: background 0.2s;
+    }
+
+    button:hover {
+        background: #2980b9;
+    }
+
+    .refresh-btn {
+        background: #2ecc71;
+    }
+
+    .refresh-btn:hover {
+        background: #27ae60;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .guests .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    #guests-container {
+        display: grid;
+        gap: 20px;
+    }
+
+    .guest {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 20px;
+        transition: transform 0.2s;
+    }
+
+    .guest:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    }
+
+    .guest-header {
+        margin-bottom: 10px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .guest-header strong {
+        color: #2c3e50;
+        font-size: 16px;
+    }
+
+    .guest-body {
+        color: #555;
+        line-height: 1.7;
+    }
+
+    .loading {
+        text-align: center;
+        padding: 40px;
+        color: #7f8c8d;
+        font-style: italic;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #95a5a6;
+    }
+
+    .alert {
+        padding: 12px 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        animation: slideIn 0.3s ease;
+    }
+
+    .alert.error {
+        background: #ffeaea;
+        color: #c0392b;
+        border: 1px solid #ffcccc;
+    }
+        
+    .alert.success {
+        background: #e8f6e8;
+        color: #27ae60;
+        border: 1px solid #c8e6c9;
+    }
+
+    .alert button {
+        background: none;
+        color: inherit;
+        border: none;
+        font-size: 18px;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+    }
+
+    footer {
+        margin-top: 40px;
+        padding: 20px;
+        text-align: center;
+        color: #7f8c8d;
+        font-size: 14px;
+    }
+
+    .version-info {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+
+    .version-item {
+        display: flex;
+        gap: 8px;
+    }
+
+    .label {
+        font-weight: 500;
+    }
+
+    .value {
+        font-family: monospace;
+        color: #2c3e50;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 15px;
+        }
+
+        section {
+            padding: 20px;
+        }
+
+        .guests .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .version-info {
+            flex-direction: column;
+            gap: 10px;
+        }
+    }
+    </style>
+</head>
+
+<body>
+    <h1>Welcome!</h1>
+
+
+    <main>
+        <section class="new-guest">
+            <h2>Leave your info</h2>
+            <form id="guest-form" onsubmit="submitGuest(event)"></div>
+                <div><label for="name">Your Name:</label></div>
+                <div><input type="text" id="name" placeholder="Enter your name" required></div>
+                <div><label for="message">Leave your message:</label></div>
+                <div><textarea id="message" rows="4" placeholder="Write your message here..." required></textarea>
+                <div>
+                    <button type="submit" class="submit-btn">
+                        <span>Post info</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+
+        <section class="guests">
+            <div class="section-header">
+                <h2>Guests</h2>
+                <button onclick="loadGuests()" class="refresh-btn">
+                    Refresh
+                </button>
+            </div>
+            <div id="guests-container">
+                <!-- Guests will be loaded here -->
+                <div class="loading">Loading guests...</div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="version-info">
+            <div class="version-item">
+                <span class="label">Frontend:</span>
+                <span class="value" id="frontend-version">loading...</span>
+            </div>
+             <div class="version-item">
+                <span class="label">Backend:</span>
+                <span class="value" id="backend-version">loading...</span>
+            </div>
+         </div>
+    </footer>
+</body>
+
+
+
+<script>
+    const FRONTEND_VERSION = "1.0.9";
+    let backendVersion = "loading...";
+
+    async function loadVersions() {
+        try {
+            const response = await fetch('/backend-version');
+            if (!response.ok) throw new Error('Failed to fetch version');
+                
+            const data = await response.json();
+            backendVersion = data.version;
+
+            updateVersionDisplay();
+        } catch (error) {
+            console.error("Error loading backend version:", error);
+            backendVersion = "Failed to fetch backend version";
+            updateVersionDisplay();
+        }
+    }
+
+    function updateVersionDisplay() {
+        document.getElementById('frontend-version').textContent = FRONTEND_VERSION;
+        document.getElementById('backend-version').textContent = backendVersion;
+     }
+
+    async function loadGuests() {
+        try {
+            const response = await fetch('/guests');
+            if (!response.ok) throw new Error('Failed to fetch guests');
+
+            const data = await response.json();
+            const jsonString = data.guests.replace(/'/g, '"');
+            displayGuests(JSON.parse(jsonString));
+        } catch (error) {
+            console.error("Error loading guests:", error);
+            showError("Failed to load guests. Please try again.");
+        }
+    }
+
+    async function submitGuest(event) {
+        event.preventDefault();
+
+        const name = document.getElementById('name').value.trim();
+        const message = document.getElementById('message').value.trim();
+
+        if (!name || !message) {
+            showError('Please fill in all fields');
+            return;
+        }
+
+        try {
+            const response = await fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, message })
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.detail || 'Failed to submit guest info');
+            }
+
+            document.getElementById('guest-form').reset();
+            showSuccess('Guest info submitted successfully!');
+            loadGuests();
+
+        } catch (error) {
+            console.error("Error submitting guest info:", error);
+            showError(error.message || 'Error submitting guest info');
+        }
+    }
+
+    function displayGuests(guests) {
+        const container = document.getElementById('guests-container');
+
+        if (!guests || guests.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <p>No records yet. Be the first guest and leave your info!</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = guests.map(g => `
+            <div class="guest">
+                <div class="guests-header">
+                    <strong>${g.name}</strong>
+                </div>
+                <div class="guest-body">${g.message}</div>
+            </div>
+        `).join('');
+    }
+
+    function showError(message) {
+        const alert = document.createElement('div');
+        alert.className = 'alert error';
+        alert.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()">×</button>
+        `;
+        document.querySelector('.container').prepend(alert);
+        setTimeout(() => alert.remove(), 5000);
+    }
+
+    function showSuccess(message) {
+        const alert = document.createElement('div');
+        alert.className = 'alert success';
+        alert.innerHTML = `
+            <span>${message}</span>
+            <button onclick="this.parentElement.remove()">×</button>
+        `;
+        document.querySelector('.container').prepend(alert);
+        setTimeout(() => alert.remove(), 5000);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadVersions();
+        loadGuests();
+
+        setInterval(loadVersions, 10000);
+
+        setInterval(loadGuests, 30000);
+    });
+</script>
+
+</html>
